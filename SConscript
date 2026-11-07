@@ -22,10 +22,8 @@ path = [
 ]
 
 if GetDepend(['SOC_RISCV_SERIES_CH32V20x_D6']):
-    print("CH32V20x_D6 is not supported yet.")
     src += Glob(os.path.join(patch_path, "startup_ch32v20x_D6.S"))
     CPPDEFINES.append("CH32V20x_D6")
-    Exit()
 elif GetDepend(['SOC_RISCV_SERIES_CH32V20x_D8']):
     print("CH32V20x_D8 is not supported yet.")
     src += Glob(os.path.join(patch_path, "startup_ch32v20x_D8.S"))
