@@ -37,9 +37,7 @@ void NMI_Handler(void)
  */
 void HardFault_Handler(void)
 {
-  printf("\nHardFault \n");
-  printf("mepc %x \n",__get_MEPC());
-  printf("mcause %x \n",__get_MCAUSE());
+  NVIC_SystemReset();
   while (1)
   {
   }

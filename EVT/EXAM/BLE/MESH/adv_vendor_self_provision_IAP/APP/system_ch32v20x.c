@@ -4,7 +4,7 @@
  * Version            : V1.0.0
  * Date               : 2021/06/06
  * Description        : CH32V20x Device Peripheral Access Layer System Source File.
- *                      For HSE = 32Mhz (CH32V208x/CH32V203RBT6)
+ *                      For HSE = 32Mhz (CH32V208x/CH32V203RBT)
  *                      For HSE = 8Mhz (other CH32V203x)
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -804,7 +804,7 @@ static void SetSysClockTo56_HSI(void)
     /* PCLK1 = HCLK */
     RCC->CFGR0 |= (uint32_t)RCC_PPRE1_DIV2;
 
-    /*  PLL configuration: PLLCLK = HSI * 7 = 48 MHz */
+    /*  PLL configuration: PLLCLK = HSI * 7 = 56 MHz */
     RCC->CFGR0 &= (uint32_t)((uint32_t)~(RCC_PLLSRC | RCC_PLLXTPRE | RCC_PLLMULL));
 
      RCC->CFGR0 |= (uint32_t)(RCC_PLLSRC_HSI_Div2 | RCC_PLLMULL7);

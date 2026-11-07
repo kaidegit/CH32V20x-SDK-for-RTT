@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : main.c
  * Author             : WCH
- * Version            : V1.0.0
- * Date               : 2021/06/06
+ * Version            : V1.0.2
+ * Date               : 2026/10/16
  * Description        : Main program body.
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -16,7 +16,7 @@
  *Master:USART2_Tx(PA2)\USART2_Rx(PA3).
  *Slave:USART3_Tx(PB10)\USART3_Rx(PB11).
  *
- *his example demonstrates UART2 and USART3 use DAM data to send and receive.
+ *his example demonstrates UART2 and USART3 use DMA data to send and receive.
  *
  *    Hardware connection:PA2 -- PB11
  *                        PA3 -- PB10
@@ -43,10 +43,10 @@ u8 TxBuffer2[] = "#Buffer2 Send from USART3 to USART2 using DMA!"; /* Send by UA
 u8 RxBuffer1[TxSize1] = {0};                                       /* USART2 Using  */
 u8 RxBuffer2[TxSize2] = {0};                                       /* USART3 Using  */
 
-u8 TxCnt1 = 0, RxCnt1 = 0;
-u8 TxCnt2 = 0, RxCnt2 = 0;
+vu8 TxCnt1 = 0, RxCnt1 = 0;
+vu8 TxCnt2 = 0, RxCnt2 = 0;
 
-u8 Rxfinish1 = 0, Rxfinish2 = 0;
+vu8 Rxfinish1 = 0, Rxfinish2 = 0;
 
 TestStatus TransferStatus1 = FAILED;
 TestStatus TransferStatus2 = FAILED;
@@ -157,7 +157,7 @@ void DMA_INIT(void)
     DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)(&USART2->DATAR);
     DMA_InitStructure.DMA_MemoryBaseAddr = (u32)RxBuffer1;
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-    DMA_InitStructure.DMA_BufferSize = TxSize2;
+    DMA_InitStructure.DMA_BufferSize = TxSize1;
     DMA_Init(DMA1_Channel6, &DMA_InitStructure);
 
     DMA_DeInit(DMA1_Channel2);
@@ -171,7 +171,7 @@ void DMA_INIT(void)
     DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)(&USART3->DATAR);
     DMA_InitStructure.DMA_MemoryBaseAddr = (u32)RxBuffer2;
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-    DMA_InitStructure.DMA_BufferSize = TxSize1;
+    DMA_InitStructure.DMA_BufferSize = TxSize2;
     DMA_Init(DMA1_Channel3, &DMA_InitStructure);
 }
 

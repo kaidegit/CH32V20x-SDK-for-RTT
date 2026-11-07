@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : main.c
  * Author             : WCH
- * Version            : V1.0.0
- * Date               : 2021/06/06
+ * Version            : V1.0.2
+ * Date               : 2026/10/16
  * Description        : Main program body.
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -38,7 +38,7 @@ typedef enum
 u8 TxBuffer[] = "USART1 Hardware Flow Control Example: USART1-\
 Hyperterminal communication using hardware flow control\n\r";
 u8 RxBuffer[TxSize] = {0};
-u8 TxCnt = 0, RxCnt = 0;
+vu8 TxCnt = 0, RxCnt = 0;
 
 /*********************************************************************
  * @fn      Buffercmp
@@ -133,7 +133,7 @@ int main(void)
             RxBuffer[RxCnt] = USART_ReceiveData(USART1);
             USART_SendData(USART1, RxBuffer[RxCnt++]); /* send it when receive a byte */
         }
-    } while((RxBuffer[RxCnt - 1] != '\r') && (RxCnt != TxSize));
+    } while((RxCnt == 0) || ((RxBuffer[RxCnt - 1] != '\r') && (RxCnt != TxSize)));
 
     while(1)
     {

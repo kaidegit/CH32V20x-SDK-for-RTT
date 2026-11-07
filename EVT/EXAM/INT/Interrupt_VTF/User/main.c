@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : main.c
  * Author             : WCH
- * Version            : V1.0.0
- * Date               : 2021/06/06
+ * Version            : V1.0.1
+ * Date               : 2026/10/15
  * Description        : Main program body.
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -21,7 +21,7 @@
 
 
 /* Global Variable */ 
-uint32_t time=0;
+volatile uint32_t time=0;
 
 void SysTick_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 
@@ -34,8 +34,8 @@ void SysTick_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
  */
 void Interrupt_VTF_Init(void)
 {
-    NVIC_EnableIRQ(SysTicK_IRQn);
     SetVTFIRQ((u32)SysTick_Handler,SysTicK_IRQn,0,ENABLE);
+    NVIC_EnableIRQ(SysTicK_IRQn);
 }
 
 /*********************************************************************
@@ -88,7 +88,9 @@ void SysTick_Handler(void)
     time=SysTick->CNT;
     SysTick->CTLR=0;
     SysTick->SR=0;
+    #if 0
     printf("delta time:%d\r\n",time-0x20);
+    #endif
 }
 
 

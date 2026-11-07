@@ -83,7 +83,7 @@ void FLASH_ReadWordAdd(uint32_t address, u32* buff, uint16_t length)
 
     for(i = 0; i < length; i++)
     {
-        buff[i] = *(__IO uint32_t*)address;//��ָ����ַ��һ���ֵ�����
+        buff[i] = *(__IO uint32_t*)address;
         address += 4;
     }
 }
@@ -113,7 +113,7 @@ uint8_t IAP_Flash_Read(uint32_t address, uint8_t* buff, uint32_t length)
     }
 
     /* Verify Address, No flash operation if the address is out of range */
-    if(((read_addr >= DEF_APP_CODE_START_ADDR) && (read_addr <= DEF_APP_CODE_END_ADDR)) || ((read_addr >= DEF_VERIFY_CODE_START_ADDR) && (read_addr <= DEF_VERIFY_CODE_END_ADDR)))
+    if(((read_addr >= DEF_APP_CODE_START_ADDR) && ((read_addr + read_len) <= DEF_APP_CODE_END_ADDR)) || ((read_addr >= DEF_VERIFY_CODE_START_ADDR) && ((read_addr + read_len) <= DEF_VERIFY_CODE_END_ADDR)))
     {
         /* Available Data */
         for(i = 0; i < read_len; i++)
@@ -153,7 +153,6 @@ uint8_t IAP_Flash_Read(uint32_t address, uint8_t* buff, uint32_t length)
  */
 uint8_t mFLASH_ProgramPage_Fast(uint32_t addr, uint32_t* buffer)
 {
-    /* ����оƬ��flash��������޸Ĵ˴����� */
     FLASH_ProgramPage_Fast( addr, buffer );
     return 0;
 }
@@ -177,7 +176,7 @@ uint8_t IAP_Flash_Write(uint32_t address, uint8_t* buff, uint32_t length)
     uint32_t write_cnts;
     volatile uint32_t page_cnts;
     volatile uint32_t page_addr;
-    uint8_t temp_buf[DEF_FLASH_PAGE_SIZE];
+    static uint8_t temp_buf[DEF_FLASH_PAGE_SIZE];
 
     /* Set initial value */
     write_addr = address;
@@ -201,7 +200,7 @@ uint8_t IAP_Flash_Write(uint32_t address, uint8_t* buff, uint32_t length)
     }
 
     /* Verify Address, No flash operation if the address is out of range */
-    if(((write_addr >= DEF_APP_CODE_START_ADDR) && (write_addr <= DEF_APP_CODE_END_ADDR)) || ((write_addr >= DEF_VERIFY_CODE_START_ADDR) && (write_addr <= DEF_VERIFY_CODE_END_ADDR)))
+    if(((write_addr >= DEF_APP_CODE_START_ADDR) && ((write_addr + write_len) <= DEF_APP_CODE_END_ADDR)) || ((write_addr >= DEF_VERIFY_CODE_START_ADDR) && ((write_addr + write_len) <= DEF_VERIFY_CODE_END_ADDR)))
     {
         for(i = 0; i < page_cnts; i++)
         {
@@ -214,12 +213,15 @@ uint8_t IAP_Flash_Write(uint32_t address, uint8_t* buff, uint32_t length)
             /* Determine if the length of the written packet is less than the page size */
             /* If it is less than, the original content of the memory needs to be read out first and modified before the operation can be performed */
             write_len_once = DEF_FLASH_PAGE_SIZE;
-            FLASH_Unlock_Fast();
-            FLASH_ErasePage_Fast(page_addr);
             if(write_len < DEF_FLASH_PAGE_SIZE)
             {
                 FLASH_Unlock_Fast();
                 IAP_Flash_Read(page_addr, temp_buf, DEF_FLASH_PAGE_SIZE);
+            }
+            FLASH_Unlock_Fast();
+            FLASH_ErasePage_Fast(page_addr);
+            if(write_len < DEF_FLASH_PAGE_SIZE)
+            {
 
                 for(j = 0; j < write_len; j++)
                 {
@@ -290,7 +292,7 @@ uint8_t IAP_Flash_Erase(uint32_t address, uint32_t length)
         return 0xFF;
     }
     /* Verify Address, No flash operation if the address is out of range */
-    if(((erase_addr >= DEF_APP_CODE_START_ADDR) && (erase_addr <= DEF_APP_CODE_END_ADDR)) || ((erase_addr >= DEF_VERIFY_CODE_START_ADDR) && (erase_addr <= DEF_VERIFY_CODE_END_ADDR)))
+    if(((erase_addr >= DEF_APP_CODE_START_ADDR) && ((erase_addr + erase_len) <= DEF_APP_CODE_END_ADDR)) || ((erase_addr >= DEF_VERIFY_CODE_START_ADDR) && ((erase_addr + erase_len) <= DEF_VERIFY_CODE_END_ADDR)))
     {
         for(i = 0; i < page_cnts; i++)
         {
@@ -304,6 +306,11 @@ uint8_t IAP_Flash_Erase(uint32_t address, uint32_t length)
             FLASH_ErasePage_Fast(page_addr);
             page_addr += DEF_FLASH_PAGE_SIZE;
         }
+        FLASH_Lock_Fast( );
+    }
+    else
+    {
+        return 0xC0;
     }
 
     return 0;
@@ -336,7 +343,7 @@ uint32_t IAP_Flash_Verify(uint32_t address, uint8_t* buff, uint32_t length)
     }
 
     /* Verify Address, No flash operation if the address is out of range */
-    if(((read_addr >= DEF_APP_CODE_START_ADDR) && (read_addr <= DEF_APP_CODE_END_ADDR)) || ((read_addr >= DEF_VERIFY_CODE_START_ADDR) && (read_addr <= DEF_VERIFY_CODE_END_ADDR)))
+    if(((read_addr >= DEF_APP_CODE_START_ADDR) && ((read_addr + read_len) <= DEF_APP_CODE_END_ADDR)) || ((read_addr >= DEF_VERIFY_CODE_START_ADDR) && ((read_addr + read_len) <= DEF_VERIFY_CODE_END_ADDR)))
     {
         for(i = 0; i < read_len; i++)
         {
@@ -347,6 +354,10 @@ uint32_t IAP_Flash_Verify(uint32_t address, uint8_t* buff, uint32_t length)
             }
             read_addr ++;
         }
+    }
+    else
+    {
+        return 0xFE;
     }
 
     return 0;
@@ -509,9 +520,9 @@ void IAP_Jump_APP(void)
     /* .... */
     /* Jump Code */
 #if DEF_CORE_TYPE == DEF_CORE_CM3
-    jump2app = (iapfun) * (vu32*)(DEF_APP_CODE_START_ADDR + 4);		//�û��������ڶ�����Ϊ����ʼ��ַ(��λ��ַ)
-    MSR_MSP(*(vu32*)DEF_APP_CODE_START_ADDR);					//��ʼ���û���������ջָ��(�û��������ĵ�һ�������ڴ��ջ����ַ)
-    jump2app();									             //��ת��APP.
+    jump2app = (iapfun) * (vu32*)(DEF_APP_CODE_START_ADDR + 4);
+    MSR_MSP(*(vu32*)DEF_APP_CODE_START_ADDR);
+    jump2app();
 #elif DEF_CORE_TYPE == DEF_CORE_RV
     /* Code for Jump, Enable Chip soft reset interrupt, jump to application code in soft reset interrupt */
     Delay_Ms(500);
@@ -529,7 +540,7 @@ void IAP_Jump_APP(void)
  *
  * @return  none
  */
-void mStopIfError( uint8_t iError )
+void mStopIfError( uint32_t iError )
 {
     if ( iError == ERR_SUCCESS )
     {
@@ -811,7 +822,8 @@ uint8_t IAP_USBH_PreDeal( void )
 void IAP_Main_Deal( void )
 {
     uint32_t totalcount, t;
-    uint16_t i, ret;
+    uint16_t i;
+    uint32_t ret;
     uint8_t  *pCodeStr;
     static   uint8_t   op_flag = 0;
 
@@ -948,6 +960,7 @@ void IAP_Main_Deal( void )
                 {
                     /* IAP Verify code error, stay in IAP */
                     DUG_PRINTF( "Verify-Code ERR %02x\r\n", ret );
+                    return;
                 }
                 DUG_PRINTF( "\r\nIAP End.\r\n" );
                 /* Jump User Application */

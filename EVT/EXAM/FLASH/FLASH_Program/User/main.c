@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : main.c
  * Author             : WCH
- * Version            : V1.0.0
- * Date               : 2023/12/29
+ * Version            : V1.0.1
+ * Date               : 2026/10/15
  * Description        : Main program body.
  *********************************************************************************
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -49,7 +49,7 @@ typedef enum {FAILED = 0, PASSED = !FAILED} TestStatus;
 #define FAST_FLASH_SIZE  (64*1024)
 
 /* Global Variable */
-uint32_t EraseCounter = 0x0, Address = 0x0;
+volatile uint32_t EraseCounter = 0x0, Address = 0x0;
 uint16_t Data = 0xAAAA;
 uint32_t WRPR_Value = 0xFFFFFFFF, ProtectedPages = 0x0;
 uint32_t NbrOfPage;
@@ -58,7 +58,7 @@ volatile TestStatus MemoryProgramStatus = PASSED;
 volatile TestStatus MemoryEraseStatus = PASSED;
 
 #define Fadr    (0x08020000)
-#define Fsize   ((((256*4))>>2))
+#define Fsize   (256)
 u32 buf[Fsize];
 
 /*********************************************************************
@@ -76,7 +76,7 @@ void Flash_Test(void)
 
     NbrOfPage = (PAGE_WRITE_END_ADDR - PAGE_WRITE_START_ADDR) / FLASH_PAGE_SIZE;
 
-    FLASH_ClearFlag(FLASH_FLAG_BSY | FLASH_FLAG_EOP |FLASH_FLAG_WRPRTERR);
+    FLASH_ClearFlag( FLASH_FLAG_EOP |FLASH_FLAG_WRPRTERR);
 
     for(EraseCounter = 0; (EraseCounter < NbrOfPage) && (FLASHStatus == FLASH_COMPLETE); EraseCounter++)
     {
@@ -199,14 +199,18 @@ int main(void)
 	SystemCoreClockUpdate();
 	Delay_Init();
 	USART_Printf_Init(115200);
-	printf("SystemClk:%d\r\n",SystemCoreClock);
+	printf("SystemClk:%u\r\n",SystemCoreClock);
 	printf( "ChipID:%08x\r\n", DBGMCU_GetCHIPID() );
 	printf("Flash Program Test\r\n");
 
+    __disable_irq();
 	Flash_Test();
 	Flash_Test_Fast();
+    __enable_irq();
 
-	while(1);
+	while(1)
+    {
+    }
 }
 
 

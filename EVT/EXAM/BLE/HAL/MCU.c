@@ -200,8 +200,8 @@ tmosEvents HAL_ProcessEvent(tmosTaskID task_id, tmosEvents events)
 #if(defined HAL_KEY) && (HAL_KEY == TRUE)
         HAL_KeyPoll(); /* Check for keys */
         tmos_start_task(halTaskID, HAL_KEY_EVENT, MS1_TO_SYSTEM_TIME(100));
-        return events ^ HAL_KEY_EVENT;
 #endif
+        return events ^ HAL_KEY_EVENT;
     }
     if(events & HAL_REG_INIT_EVENT)
     {
@@ -232,7 +232,7 @@ tmosEvents HAL_ProcessEvent(tmosTaskID task_id, tmosEvents events)
  *
  * @return  None.
  */
-void HAL_Init()
+void HAL_Init(void)
 {
     halTaskID = TMOS_ProcessEventRegister(HAL_ProcessEvent);
     HAL_TimeInit();

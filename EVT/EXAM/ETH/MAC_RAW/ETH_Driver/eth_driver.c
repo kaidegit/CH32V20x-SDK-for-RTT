@@ -422,8 +422,16 @@ void ETH_Start(void)
  */
 void ETH_SetClock(void)
 {
-    /* ETH initialization */
-    RCC_ETHDIVConfig(RCC_ETHCLK_Div2);  // 120M/2 = 60MHz
+    if(SystemCoreClock == 120000000)
+    {
+        /* ETH initialization */
+        RCC_ETHDIVConfig(RCC_ETHCLK_Div2);  // 120M/2 = 60MHz
+    }
+    else if (SystemCoreClock == 60000000) {
+        /* ETH initialization */
+        RCC_ETHDIVConfig(RCC_ETHCLK_Div1);  // 60MHz
+    }
+    else printf("System clock error\r\n");
 }
 
 /*********************************************************************
@@ -490,8 +498,11 @@ uint32_t MACRAW_Tx(uint8_t *buff, uint16_t len)
      /* Check if the descriptor is owned by the ETHERNET DMA (when set) or CPU (when reset) */
     if( DMATxDescToSet->Status & ETH_DMATxDesc_OWN )
     {
-        /* Return ERROR: OWN bit set */
-        return ETH_ERROR;
+        if((R8_ETH_ECON1 & RB_ETH_ECON1_TXRTS) == 0)
+        {
+            DMATxDescToSet->Status &= ~ETH_DMATxDesc_OWN;
+        }
+        else return ETH_ERROR;        /* Return ERROR: OWN bit set */
     }
     DMATxDescToSet->Status |= ETH_DMATxDesc_OWN;
     R16_ETH_ETXLN = len;
